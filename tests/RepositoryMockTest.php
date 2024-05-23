@@ -10,7 +10,7 @@ namespace Tests;
 
 use BadMethodCallException;
 use DateTime;
-// use App\RepositoryMock\RepositoryMockObject;
+use App\RepositoryMock\RepositoryMockObject;
 use App\RepositoryMock\RepositoryMockTrait;
 use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,6 +27,7 @@ use Tests\Repository\RepositoryNoSave;
 use Tests\Repository\RepositorySaveWithoutType;
 use Tests\Repository\RepositorySimple;
 use Doctrine\Common\Collections\Collection;
+use Tests\Sut\SutService;
 
 
 class RepositoryMockTest extends TestCase
@@ -44,7 +45,7 @@ class RepositoryMockTest extends TestCase
                 'updatedBy' => [
                     'id' => 2,
                     'fullName' => 'Test Name',
-                ]
+                ],
             ]);
 
         $this->assertInstanceOf(Entity::class, $obj);
@@ -129,5 +130,117 @@ class RepositoryMockTest extends TestCase
                 ],
             ]
         );
+    }
+
+    #[Test]
+    public function repositoryClassExists(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessageMatches('/^Repository class does not exist[.]$/');
+
+        $this->createRepositoryMock('bad-class-name');
+    }
+
+    #[Test]
+    public function repositoryClassIsServiceEntityRepository(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessageMatches('/^Repository class does not extend class ServiceEntityRepository[.]$/');
+
+        $this->createRepositoryMock(Entity::class);
+    }
+
+    #[Test]
+    public function repositoryMockIsMockObjectAndClass(): void
+    {
+        $repository = $this->createRepositoryMock(
+            Repository::class
+        );
+
+        $this->assertInstanceOf(MockObject::class, $repository);
+        $this->assertInstanceOf(Repository::class, $repository);
+    }
+
+    #[Test]
+    public function exceptionWhenSaveMethodNotDefined(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage("Can't detect class of entity. Please specify class as second parameter.");
+
+        $this->createRepositoryMock(
+            RepositoryNoSave::class
+        );
+    }
+
+    #[Test]
+    public function exceptionWhenSaveMethodWithoutEntityType(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage("Can't detect class of entity. Please specify class as second parameter.");
+
+        $this->createRepositoryMock(
+            RepositorySaveWithoutType::class
+        );
+    }
+
+    #[Test]
+    public function dbLoadDataAfterCreateMock(): void
+    {
+        /** @var Repository|RepositoryMockObject $repository */
+        $repository = $this->createRepositoryMock(
+            Repository::class
+        );
+
+        $repository->loadStore(
+            [
+                [
+                    'id' => 2,
+                    'referenceId' => 7,
+                    'name' => 'Name 2',
+                ],
+                [
+                    'id' => 3,
+                    'referenceId' => 12,
+                    'name' => 'Name 3',
+                ],
+            ]
+        );
+
+        $entities = $repository->getStoreContent();
+        $this->assertSame(2, count($entities));
+
+        $entity = $entities[2];
+        $this->assertInstanceOf(Entity::class, $entity);
+        $this->assertSame(2, $entity->getId());
+        $this->assertSame(7, $entity->getReferenceId());
+        $this->assertSame('Name 2', $entity->getName());
+
+        $entity = $entities[3];
+        $this->assertInstanceOf(Entity::class, $entity);
+        $this->assertSame(3, $entity->getId());
+        $this->assertSame(12, $entity->getReferenceId());
+        $this->assertSame('Name 3', $entity->getName());
+    }
+
+    #[Test]
+    public function entityTypeAsSecondParameter(): void
+    {
+        /** @var RepositoryNoSave|RepositoryMockObject $repository */
+        $repository = $this->createRepositoryMock(
+            RepositoryNoSave::class,
+            EntityMulti::class
+        );
+
+        $repository->loadStore(
+            [
+                [
+                    'id' => 1,
+                ],
+            ]
+        );
+
+        $entities = $repository->getStoreContent();
+        $entity = $entities[1];
+        $this->assertInstanceOf(EntityMulti::class, $entity);
     }
 }

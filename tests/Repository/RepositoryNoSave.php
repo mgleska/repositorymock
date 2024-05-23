@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Tests\Entity\Entity;
 
-class RepositoryNoSave extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<Entity>
+ */
+class RepositoryNoSave extends ServiceEntityRepository
 {
-    /**
-     * @method Entity|null find($id, $lockMode = null, $lockVersion = null)
-     * @method Entity|null findOneBy(array $criteria, array $orderBy = null)
-     * @method Entity[]    findAll()
-     * @method Entity[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
-     */
-
-    public function persist(Entity $entity, bool $flush = true): void
+    public function __construct(ManagerRegistry $registry)
     {
-        $this->_em->persist($entity);
+        parent::__construct($registry, Entity::class);
+    }
+
+    public function persist(Entity $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
 
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 }
