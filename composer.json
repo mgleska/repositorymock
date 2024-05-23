@@ -1,0 +1,35 @@
+{
+    "name": "mgleska/repositorymock",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marek Gleska",
+            "email": "mgleska@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\RepositoryMock\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": "> 8.1"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "require-dev": {
+        "doctrine/collections": "^2.2",
+        "doctrine/orm": "^3.1",
+        "phpstan/phpstan": "^1.11",
+        "phpstan/phpstan-doctrine": "^1.4",
+        "phpunit/phpunit": "^11.1"
+    }
+}
