@@ -12,7 +12,7 @@ use Tests\Entity\Entity;
  */
 class RepositorySaveWithoutType extends EntityRepository
 {
-    public function save($entity, bool $flush = false): void // @phpstan-ignore-line
+    public function save($entity, bool $flush = false): void // @phpstan-ignore missingType.parameter
     {
         $this->getEntityManager()->persist($entity);
 

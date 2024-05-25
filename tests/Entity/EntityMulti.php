@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+
 declare(strict_types=1);
 
 namespace Tests\Entity;
@@ -12,10 +14,10 @@ class EntityMulti
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int $id; // @phpstan-ignore-line
+    private int $id; // @phpstan-ignore property.onlyRead
 
     #[ORM\ManyToOne]
-    private EntityUser $owner; // @phpstan-ignore-line
+    private EntityUser $owner; // @phpstan-ignore property.onlyRead
 
     /**
      * @var Collection<int, EntityUser>

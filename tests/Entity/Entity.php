@@ -1,9 +1,12 @@
 <?php
 
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+
 declare(strict_types=1);
 
 namespace Tests\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 class Entity
@@ -11,7 +14,7 @@ class Entity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int $id; // @phpstan-ignore-line
+    private int $id; // @phpstan-ignore property.onlyRead
 
     #[ORM\Column]
     private int $referenceId;
@@ -20,7 +23,7 @@ class Entity
     private ?string $name;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTime $validTo;
+    private ?DateTime $validTo;
 
     #[ORM\ManyToOne]
     private EntityUser $updatedBy;
@@ -60,12 +63,12 @@ class Entity
         $this->updatedBy = $updatedBy;
     }
 
-    public function getValidTo(): ?\DateTime
+    public function getValidTo(): ?DateTime
     {
         return $this->validTo;
     }
 
-    public function setValidTo(?\DateTime $validTo): void
+    public function setValidTo(?DateTime $validTo): void
     {
         $this->validTo = $validTo;
     }

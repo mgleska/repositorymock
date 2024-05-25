@@ -19,6 +19,7 @@ use ReflectionException;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionProperty;
+
 use function array_key_exists;
 use function array_keys;
 use function class_exists;
@@ -49,8 +50,7 @@ trait RepositoryMockTrait
     protected function createRepositoryMock(
         string $repositoryClassName,
         string $entityClassName = null,
-    ): MockObject
-    {
+    ): MockObject {
         if (! class_exists($repositoryClassName)) {
             throw new BadMethodCallException('Repository class does not exist.');
         }
@@ -245,8 +245,7 @@ trait RepositoryMockTrait
                     }
                     if ($mapping->getName() === OneToOne::class || $mapping->getName() === ManyToOne::class) {
                         $targetClass = $prop->getType()->getName(); // @phpstan-ignore method.notFound
-                    }
-                    else {
+                    } else {
                         $targetClass = $mapping->getArguments()['targetEntity'] ?? $mapping->getArguments()[0] ?? null;
                         if (! $targetClass) {
                             throw new BadMethodCallException('Not defined targetEntity for property "' . $field . '"');

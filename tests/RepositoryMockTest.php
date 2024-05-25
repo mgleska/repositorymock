@@ -44,7 +44,8 @@ class RepositoryMockTest extends TestCase
                     'id' => 2,
                     'fullName' => 'Test Name',
                 ],
-            ]);
+            ]
+        );
 
         $this->assertInstanceOf(Entity::class, $obj);
         $this->assertSame(10, $obj->getReferenceId());
@@ -75,7 +76,8 @@ class RepositoryMockTest extends TestCase
                         'fullName' => 'Owner SubMulti',
                     ],
                 ],
-            ]);
+            ]
+        );
 
         $this->assertInstanceOf(EntityMulti::class, $obj);
         $this->assertInstanceOf(EntityUser::class, $obj->getOwner());
@@ -252,17 +254,16 @@ class RepositoryMockTest extends TestCase
         /** @var Repository|RepositoryMockObject $repository */
         $repository = $this->createRepositoryMock(Repository::class);
         $repository->loadStore([
-                [
-                    'id'          => 1,
-                    'referenceId' => 5,
-                    'name'        => null,
-                    'updatedBy'   => [
-                        'id'       => 5,
-                        'fullName' => "User Name",
-                    ],
+            [
+                'id'          => 1,
+                'referenceId' => 5,
+                'name'        => null,
+                'updatedBy'   => [
+                    'id'       => 5,
+                    'fullName' => "User Name",
                 ],
-            ]
-        );
+            ],
+        ]);
 
         /** @var Entity $entity */
         $entity = $repository->find(1);
