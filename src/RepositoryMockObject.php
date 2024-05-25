@@ -1,12 +1,12 @@
 <?php
 
-namespace App\RepositoryMock;
+namespace RepositoryMock;
 
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * @method \void loadStore(mixed[][] $values)
- * @method \object[] getStoreContent()
+ * @method void loadStore(mixed[][] $values)
+ * @method object[] getStoreContent()
  */
 interface RepositoryMockObject extends MockObject
 {}

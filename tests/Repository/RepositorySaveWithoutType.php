@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Repository;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityRepository;
 use Tests\Entity\Entity;
 
 /**
- * @extends ServiceEntityRepository<Entity>
+ * @extends EntityRepository<Entity>
  */
-class RepositorySaveWithoutType extends ServiceEntityRepository
+class RepositorySaveWithoutType extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Entity::class);
-    }
-
     public function save($entity, bool $flush = false): void // @phpstan-ignore-line
     {
         $this->getEntityManager()->persist($entity);

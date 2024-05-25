@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Repository;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityRepository;
 use Tests\Entity\EntityMulti;
 
 /**
- * @extends ServiceEntityRepository<EntityMulti>
+ * @extends EntityRepository<EntityMulti>
  */
-class RepositoryMulti extends ServiceEntityRepository
+class RepositoryMulti extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, EntityMulti::class);
-    }
-
     public function save(EntityMulti $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

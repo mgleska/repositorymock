@@ -8,8 +8,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\RepositoryMock\RepositoryMockObject;
-use App\RepositoryMock\RepositoryMockTrait;
+use RepositoryMock\RepositoryMockObject;
+use RepositoryMock\RepositoryMockTrait;
 use BadMethodCallException;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
@@ -145,7 +145,7 @@ class RepositoryMockTest extends TestCase
     public function repositoryClassIsServiceEntityRepository(): void
     {
         $this->expectException(BadMethodCallException::class);
-        $this->expectExceptionMessageMatches('/^Repository class does not extend class ServiceEntityRepository[.]$/');
+        $this->expectExceptionMessageMatches('/^Repository class does not extend class EntityRepository[.]$/');
 
         $this->createRepositoryMock(Entity::class);
     }

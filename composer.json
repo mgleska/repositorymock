@@ -10,7 +10,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "App\\RepositoryMock\\": "src/"
+            "RepositoryMock\\": "src/"
         }
     },
     "autoload-dev": {
@@ -27,7 +27,6 @@
     },
     "require-dev": {
         "doctrine/collections": "^2.2",
-        "doctrine/doctrine-bundle": "^2.12",
         "doctrine/orm": "^3.1",
         "phpstan/phpstan": "^1.11",
         "phpstan/phpstan-doctrine": "^1.4",

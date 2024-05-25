@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Repository;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityRepository;
 use Tests\Entity\Entity;
 
 /**
- * @extends ServiceEntityRepository<Entity>
+ * @extends EntityRepository<Entity>
  */
-class RepositoryNoSave extends ServiceEntityRepository
+class RepositoryNoSave extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Entity::class);
-    }
-
     public function persist(Entity $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

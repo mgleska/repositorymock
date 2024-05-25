@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\RepositoryMock;
+namespace RepositoryMock;
 
 use BadMethodCallException;
 use DateTime;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
@@ -54,8 +54,8 @@ trait RepositoryMockTrait
         if (! class_exists($repositoryClassName)) {
             throw new BadMethodCallException('Repository class does not exist.');
         }
-        if (! is_a($repositoryClassName, ServiceEntityRepository::class, true)) {
-            throw new BadMethodCallException('Repository class does not extend class ServiceEntityRepository.');
+        if (! is_a($repositoryClassName, EntityRepository::class, true)) {
+            throw new BadMethodCallException('Repository class does not extend class EntityRepository.');
         }
 
         if (! $entityClassName) {
