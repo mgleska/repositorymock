@@ -9,5 +9,4 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @method \object[] getStoreContent()
  */
 interface RepositoryMockObject extends MockObject
-{
-}
+{}

@@ -6,10 +6,8 @@ namespace App\RepositoryMock;
 
 use BadMethodCallException;
 use DateTime;
-// use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping\Driver\AttributeReader;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
@@ -21,21 +19,28 @@ use ReflectionException;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionProperty;
+use function array_key_exists;
 use function array_keys;
 use function class_exists;
 use function count;
+use function get_class;
 use function in_array;
 use function is_a;
 use function is_array;
+use function is_null;
+use function is_object;
 use function max;
+use function method_exists;
+use function serialize;
 use function str_replace;
+use function unserialize;
 
 trait RepositoryMockTrait
 {
     /**
      * @template T of object
      * @param class-string<T> $repositoryClassName
-     * @param string $entityClassName
+     * @param class-string|null $entityClassName
      * @return T&MockObject
      *
      * @throws ReflectionException
@@ -43,7 +48,7 @@ trait RepositoryMockTrait
      */
     protected function createRepositoryMock(
         string $repositoryClassName,
-        string $entityClassName = '',
+        string $entityClassName = null,
     ): MockObject
     {
         if (! class_exists($repositoryClassName)) {
@@ -70,6 +75,7 @@ trait RepositoryMockTrait
             throw new BadMethodCallException("Can't detect class of entity. Please specify class as second parameter.");
         }
 
+        /** @var class-string<T&RepositoryMockObject> $mockedClassName */
         $mockedClassName = str_replace('\\', '_', $repositoryClassName) . '_RepositoryMock';
         if (! class_exists($mockedClassName)) {
             $classTemplate = "
@@ -101,7 +107,7 @@ trait RepositoryMockTrait
                 function (array $values) use ($store): void {
                     $store->items = [];
                     foreach ($values as $row) {
-                        $obj = $this->createFakeObject($store->entityClassName, $row);
+                        $obj = self::createFakeObject($store->entityClassName, $row); // @phpstan-ignore argument.templateType
                         $store->items[$obj->getId()] = $obj;
                     }
                     $store->autoIncrement =
@@ -117,19 +123,103 @@ trait RepositoryMockTrait
                 }
             );
 
+        $mock
+            ->method('find')
+            ->willReturnCallback(
+                function (int $id) use ($store): object|null {
+                    if (! array_key_exists($id, $store->items)) {
+                        return null;
+                    }
+                    return unserialize(serialize($store->items[$id]));
+                }
+            );
+
+        $mock
+            ->method('findOneBy')
+            ->willReturnCallback(
+                function (array $criteria) use ($store): object|null {
+                    foreach ($store->items as $obj) { // @phpstan-ignore foreach.emptyArray
+                        $matchCount = $this->repositoryMockFindByHelper($criteria, $obj);
+                        if ($matchCount === count($criteria)) {
+                            return unserialize(serialize($obj));
+                        }
+                    }
+                    return null;
+                }
+            );
+
+        $mock
+            ->method('findBy')
+            ->willReturnCallback(
+                function (array $criteria) use ($store): array {
+                    $ret = [];
+                    foreach ($store->items as $obj) { // @phpstan-ignore foreach.emptyArray
+                        $matchCount = $this->repositoryMockFindByHelper($criteria, $obj);
+                        if ($matchCount === count($criteria)) {
+                            $ret[] = unserialize(serialize($obj));
+                        }
+                    }
+                    return $ret;
+                }
+            );
+
+        if (in_array('save', $optionalMethods)) {
+            $mock
+                ->method('save')
+                ->willReturnCallback(
+                    function ($obj) use ($store): void {
+                        $idReflection = new ReflectionProperty($obj, 'id');
+                        if ($idReflection->isInitialized($obj) === false || is_null($idReflection->getValue($obj))) {
+                            $storeKeys = array_keys($store->items);
+                            $autoId = max(
+                                $store->autoIncrement,
+                                count($storeKeys) > 0 ? max($storeKeys) + 1 : 0 // @phpstan-ignore greater.alwaysFalse
+                            );
+                            $idReflection->setValue($obj, $autoId);
+                            $store->autoIncrement = $autoId + 1;
+                            $store->items[$autoId] = unserialize(serialize($obj));
+                            return;
+                        }
+                        if (array_key_exists($obj->getId(), $store->items)) {
+                            $store->items[$obj->getId()] = unserialize(serialize($obj));
+                            return;
+                        }
+                        throw new OutOfBoundsException(
+                            "Method 'save' can't find entity with id '" . $obj->getId() . "'."
+                        );
+                    }
+                );
+        }
+
+        if (in_array('remove', $optionalMethods)) {
+            $mock
+                ->method('remove')
+                ->willReturnCallback(
+                    function ($obj) use ($store): void {
+                        if (array_key_exists($obj->getId(), $store->items)) {
+                            unset($store->items[$obj->getId()]);
+                            return;
+                        }
+                        throw new OutOfBoundsException(
+                            "Method 'remove' can't find entity with id '" . $obj->getId() . "'."
+                        );
+                    }
+                );
+        }
+
         return $mock;
     }
 
-        /**
+    /**
      * @template T
      * @param class-string<T> $className
-     * @param array $objData
+     * @param array<int|string, mixed> $objData
      * @param boolean $collectionMode
      * @return T|T[]
      *
      * @throws ReflectionException
      */
-    private function createFakeObject(string $className, array $objData, bool $collectionMode = false): mixed
+    private static function createFakeObject(string $className, array $objData, bool $collectionMode = false): mixed
     {
         $collection = new ArrayCollection();
         if ($collectionMode) {
@@ -154,7 +244,7 @@ trait RepositoryMockTrait
                         );
                     }
                     if ($mapping->getName() === OneToOne::class || $mapping->getName() === ManyToOne::class) {
-                        $targetClass = $prop->getType()->getName();
+                        $targetClass = $prop->getType()->getName(); // @phpstan-ignore method.notFound
                     }
                     else {
                         $targetClass = $mapping->getArguments()['targetEntity'] ?? $mapping->getArguments()[0] ?? null;
@@ -162,7 +252,7 @@ trait RepositoryMockTrait
                             throw new BadMethodCallException('Not defined targetEntity for property "' . $field . '"');
                         }
                     }
-                    $value = $this->createFakeObject(
+                    $value = self::createFakeObject( // @phpstan-ignore argument.templateType
                         $targetClass,
                         $value,
                         $mapping->getName() === OneToMany::class
@@ -175,10 +265,12 @@ trait RepositoryMockTrait
             }
             $collection->add($obj);
         }
+
         return $collection;
     }
 
     /**
+     * @param array<string, mixed> $criteria
      * @throws ReflectionException
      */
     private function repositoryMockFindByHelper(array $criteria, object $obj): int

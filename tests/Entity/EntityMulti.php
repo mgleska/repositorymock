@@ -12,10 +12,10 @@ class EntityMulti
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int $id;
+    private int $id; // @phpstan-ignore-line
 
     #[ORM\ManyToOne]
-    private EntityUser $owner;
+    private EntityUser $owner; // @phpstan-ignore-line
 
     /**
      * @var Collection<int, EntityUser>
@@ -48,11 +48,17 @@ class EntityMulti
         return $this->owner;
     }
 
+    /**
+     * @return Collection<int, EntityUser>
+     */
     public function getUsers(): Collection
     {
         return $this->users;
     }
 
+    /**
+     * @param Collection<int, EntityUser> $users
+     */
     public function setUsers(Collection $users): void
     {
         $this->users = $users;
@@ -68,21 +74,34 @@ class EntityMulti
         $this->subMulti = $subMulti;
     }
 
+    /**
+     * @return Collection<int, EntityUser>
+     */
     public function getGroups(): Collection
     {
         return $this->groups;
     }
 
+    /**
+     * @param Collection<int, EntityUser> $groups
+     */
     public function setGroups(Collection $groups): void
     {
         $this->groups = $groups;
     }
+
+    /**
+     * @return Collection<int, EntityUser>
+     */
 
     public function getBadUsers(): Collection
     {
         return $this->badUsers;
     }
 
+    /**
+     * @param Collection<int, EntityUser> $badUsers
+     */
     public function setBadUsers(Collection $badUsers): void
     {
         $this->badUsers = $badUsers;

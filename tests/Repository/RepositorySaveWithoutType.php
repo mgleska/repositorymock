@@ -18,7 +18,7 @@ class RepositorySaveWithoutType extends ServiceEntityRepository
         parent::__construct($registry, Entity::class);
     }
 
-    public function save($entity, bool $flush = false): void
+    public function save($entity, bool $flush = false): void // @phpstan-ignore-line
     {
         $this->getEntityManager()->persist($entity);
 

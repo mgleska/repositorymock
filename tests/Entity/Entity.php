@@ -11,7 +11,7 @@ class Entity
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int $id;
+    private int $id; // @phpstan-ignore-line
 
     #[ORM\Column]
     private int $referenceId;

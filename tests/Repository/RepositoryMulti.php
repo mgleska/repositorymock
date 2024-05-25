@@ -4,33 +4,35 @@ declare(strict_types=1);
 
 namespace Tests\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Tests\Entity\EntityMulti;
 
-class RepositoryMulti extends EntityRepository
+/**
+ * @extends ServiceEntityRepository<EntityMulti>
+ */
+class RepositoryMulti extends ServiceEntityRepository
 {
-    /**
-     * @method EntityMulti|null find($id, $lockMode = null, $lockVersion = null)
-     * @method EntityMulti|null findOneBy(array $criteria, array $orderBy = null)
-     * @method EntityMulti[]    findAll()
-     * @method EntityMulti[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
-     */
-
-    public function save(EntityMulti $entity, bool $flush = true): void
+    public function __construct(ManagerRegistry $registry)
     {
-        $this->_em->persist($entity);
+        parent::__construct($registry, EntityMulti::class);
+    }
+
+    public function save(EntityMulti $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
 
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
     public function remove(EntityMulti $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this->getEntityManager()->remove($entity);
 
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 }
