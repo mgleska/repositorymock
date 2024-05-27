@@ -107,6 +107,14 @@ trait RepositoryMockTrait
                 function (array $values) use ($store): void {
                     $store->items = [];
                     foreach ($values as $row) {
+                        if (! isset($row['id'])) {
+                            $row['id'] = count(array_keys($store->items)) > 0 ? max(array_keys($store->items)) + 1 : 1;
+                        }
+                        if (array_key_exists($row['id'], $store->items)) {
+                            throw new OutOfBoundsException(
+                                "Entity with id '" . $row['id'] . "' already exists in store."
+                            );
+                        }
                         $obj = self::createFakeObject($store->entityClassName, $row); // @phpstan-ignore argument.templateType
                         $store->items[$obj->getId()] = $obj;
                     }

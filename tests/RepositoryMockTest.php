@@ -227,6 +227,95 @@ class RepositoryMockTest extends TestCase
     }
 
     #[Test]
+    public function dbLoadDataWithMissingEntityId(): void
+    {
+        /** @var Repository|RepositoryMockObject $repository */
+        $repository = $this->createRepositoryMock(Repository::class);
+
+        $repository->loadStore(
+            [
+                [
+                    'referenceId' => 7,
+                ],
+                [
+                    'id' => 3,
+                    'referenceId' => 12,
+                ],
+                [
+                    'referenceId' => 15,
+                ],
+            ]
+        );
+
+        /** @var Entity[] $entities */
+        $entities = $repository->getStoreContent();
+        $this->assertSame(3, count($entities));
+
+        $this->assertArrayHasKey(1, $entities); // Id auto generated as first autoIncrement value
+        $this->assertArrayHasKey(3, $entities); // Id set explicitly
+        $this->assertArrayHasKey(4, $entities); // Id auto generated as next available autoIncrement value
+
+        $entity = $entities[1];
+        $this->assertSame(7, $entity->getReferenceId());
+
+        $entity = $entities[3];
+        $this->assertSame(12, $entity->getReferenceId());
+
+        $entity = $entities[4];
+        $this->assertSame(15, $entity->getReferenceId());
+    }
+
+    #[Test]
+    public function dbLoadDataWithEntityIdConflict(): void
+    {
+        /** @var Repository|RepositoryMockObject $repository */
+        $repository = $this->createRepositoryMock(Repository::class);
+
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessageMatches("/^Entity with id '3' already exists in store[.]$/");
+
+        $repository->loadStore(
+            [
+                [
+                    'id' => 3,
+                    'referenceId' => 7,
+                ],
+                [
+                    'id' => 3,
+                    'referenceId' => 12,
+                ],
+            ]
+        );
+    }
+
+    #[Test]
+    public function dbLoadDataWithEntityIdConflict2(): void
+    {
+        /** @var Repository|RepositoryMockObject $repository */
+        $repository = $this->createRepositoryMock(Repository::class);
+
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessageMatches("/^Entity with id '4' already exists in store[.]$/");
+
+        $repository->loadStore(
+            [
+                [
+                    'id' => 3,
+                    'referenceId' => 7,
+                ],
+                [
+                    // id = 4 will be auto generated
+                    'referenceId' => 12,
+                ],
+                [
+                    'id' => 4,
+                    'referenceId' => 17,
+                ],
+            ]
+        );
+    }
+
+    #[Test]
     public function entityTypeAsSecondParameter(): void
     {
         /** @var RepositoryNoSave|RepositoryMockObject $repository */
