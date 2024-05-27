@@ -1,5 +1,6 @@
 {
     "name": "mgleska/repositorymock",
+    "description": "A package to facilitate the testing of classes/methods which uses ORM Repository and ORM Entity objects.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -20,9 +21,9 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "> 8.1",
+        "php": ">= 8.1",
         "doctrine/collections": "^2.2",
-        "doctrine/orm": "^3.2",
+        "doctrine/orm": "^3",
         "phpunit/phpunit": "^11.1"
     },
     "config": {
@@ -37,6 +38,9 @@
         "check": [
             "@php vendor/bin/phpstan analyse -v",
             "@php vendor/bin/phpcs"
+        ],
+        "testcov": [
+            "@php -d xdebug.mode=coverage -d memory_limit=4G vendor/bin/phpunit --coverage-html coverage"
         ]
     }
 }
