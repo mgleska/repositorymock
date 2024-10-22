@@ -21,6 +21,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use Tests\Entity\Entity;
+use Tests\Entity\EntityConstruct;
+use Tests\Entity\EntityConstructArray;
 use Tests\Entity\EntityMulti;
 use Tests\Entity\EntityUser;
 use Tests\Repository\Repository;
@@ -130,6 +132,29 @@ class RepositoryMockTest extends TestCase
                 ],
             ]
         );
+    }
+
+    #[Test]
+    public function createFakeObjectTest5(): void
+    {
+        $obj = $this->createFakeObject(EntityConstruct::class, ['id' => 10]);
+
+        $this->assertInstanceOf(EntityConstruct::class, $obj);
+        $this->assertSame(10, $obj->getId());
+        $this->assertTrue(isset($obj->int));
+        $this->assertTrue(isset($obj->bool));
+        $this->assertTrue(isset($obj->float));
+        $this->assertTrue(isset($obj->string));
+        $this->assertTrue(isset($obj->mixed));
+    }
+
+    #[Test]
+    public function createFakeObjectTest6(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessageMatches('/^__construct[(][)] parameter "array" has type which is too complex to guess default value[.]$/');
+
+        $this->createFakeObject(EntityConstructArray::class, ['id' => 10]);
     }
 
     #[Test]
