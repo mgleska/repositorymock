@@ -236,8 +236,37 @@ trait RepositoryMockTrait
             $collectionData = [$objData];
         }
         foreach ($collectionData as $objData) {
-            $obj = new $className();
-            $reflection = new ReflectionClass($obj);
+            $reflection = new ReflectionClass($className);
+            $constr = $reflection->getConstructor();
+            if ($constr) {
+                $values = [];
+                foreach ($constr->getParameters() as $par) {
+                    $type = ($par->getType()?->getName()) ?? 'unknown'; // @phpstan-ignore method.notFound
+                    switch ($type) {
+                        case 'int':
+                        case 'unknown':
+                            $value = 1;
+                            break;
+                        case 'bool':
+                            $value = true;
+                            break;
+                        case 'float':
+                            $value = 1.0;
+                            break;
+                        case 'string':
+                            $value = 'string';
+                            break;
+                        default:
+                            throw new BadMethodCallException(
+                                '__construct() parameter "' . $par->getName() . '" has type which is too complex to guess default value.'
+                            );
+                    }
+                    $values[] = $value;
+                }
+                $obj = new $className(...$values);
+            } else {
+                $obj = new $className();
+            }
             foreach ($objData as $field => $value) {
                 $prop = $reflection->getProperty($field);
                 if (is_array($value)) {
